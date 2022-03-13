@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Mango.Services.ProductAPI.DbContexts;
 using Mango.Services.ProductAPI.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,24 +20,51 @@ namespace Mango.Services.ProductAPI.Repository
             this.mapper = mapper;
         }
 
-        public Task<ProductDto> CreateUpdateProduct(ProductDto productDto)
+        public async Task<ProductDto> CreateUpdateProduct(ProductDto productDto)
         {
-            throw new NotImplementedException();
+            Product product = this.mapper.Map<ProductDto, Product>(productDto);
+            if(product.ProductId > 0)
+            {
+                this.db.Products.Update(product);
+            }
+            else
+            {
+                this.db.Products.Add(product);
+            }
+            await this.db.SaveChangesAsync();
+            return this.mapper.Map<Product, ProductDto>(product);
         }
 
-        public Task<bool> DeleteProduct(int productId)
+        public async Task<bool> DeleteProduct(int productId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                Product product = await this.db.Products.FirstOrDefaultAsync(u => u.ProductId == productId);
+                if(product == null)
+                {
+                    return false;
+                }
+                this.db.Products.Remove(product);
+                await this.db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task<ProductDto> GetProdcutById(int productId)
+        public async Task<ProductDto> GetProductById(int productId)
         {
-            throw new NotImplementedException();
+            Product product = await this.db.Products.Where(x=>x.ProductId==productId).FirstOrDefaultAsync();
+            return this.mapper.Map<ProductDto>(product);
         }
 
-        public Task<IEnumerable<ProductDto>> GetProducts()
+        public async Task<IEnumerable<ProductDto>> GetProducts()
         {
-            throw new NotImplementedException();
+            List<Product> productList = await this.db.Products.ToListAsync();
+            return this.mapper.Map<List<ProductDto>>(productList);
         }
     }
 }
