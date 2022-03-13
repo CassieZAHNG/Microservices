@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mongo.Web.Services.IServices
 {
-    public interface IProductService
+    public interface IProductService : IBaseService
     {
         // Return type is generic as T
         Task<T> GetAllProductsAsync<T>();
